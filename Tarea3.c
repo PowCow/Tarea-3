@@ -14,89 +14,82 @@ typedef struct {
     int ID ;
     char nombre[50] ;
     char descripcion[200] ;
-    Item items ;
-    int arriba ;
-    int abajo ;
-    int izquierda ; 
-    int derecha ;
+    List*items ;
+    int arriba, abajo, izquierda, derecha ;
     int es_final ;
 } Escenario ;
 
-void leer_escenarios(Escenario *escenarios, int *cantEscenarios) { //carga canciones del archivo csv
-    
+Escenario* crearEscenario(char** campos) {
+    Escenario* nuevoEscenario = (Escenario*)malloc(sizeof(Escenario)) ;
+    if (nuevoEscenario == NULL) return NULL ;
+
+    nuevoEscenario->ID = atoi(campos[0]) ;
+    strcpy(nuevoEscenario->nombre, campos[1]) ;
+    strcpy(nuevoEscenario->descripcion, campos[2]) ;
+
+    nuevoEscenario->items = list_create() ; //colocamos los items del escenario
+    List* listadeItems = split_string(campos[3], ";") ;
+    for (char* itemsitos = list_first(listadeItems) ; itemsitos != NULL ; itemsitos = list_next(listadeItems)) {
+        List* valores = split_string(itemsitos, ",") ;
+        Item* nuevoItem = (Item*)malloc(sizeof(Item)) ;
+        if (nuevoItem == NULL) return NULL ;
+
+        strcpy(nuevoItem->nombre_Item, list_first(valores)) ;
+        nuevoItem->peso = atoi(list_next(valores)) ;
+        nuevoItem->valor = atoi(list_next(valores)) ;
+        list_pushBack(nuevoEscenario->items, nuevoItem) ;
+
+        list_clean(valores) ;
+        free(valores) ;
+    }
+    list_clean(listadeItems) ;
+    free(listadeItems) ;
+
+    nuevoEscenario->arriba = atoi(campos[4]) ;
+    nuevoEscenario->abajo = atoi(campos[5]) ;
+    nuevoEscenario->izquierda = atoi(campos[6]) ;
+    nuevoEscenario->derecha = atoi(campos[7]) ;
+    nuevoEscenario->es_final = atoi(campos[8]) ;
+
+    return nuevoEscenario ;
+}
+
+void cargadeEscenarios(List* escenarios){
     FILE *archivo = fopen("graphquest.csv", "r") ;
     if (archivo == NULL) {
         perror("Error al abrir el archivo") ; // Informa si el archivo no puede abrirse
         return;
     }
     char **campos ;
-    campos = leer_linea_csv(archivo, ',') ;// Lee los encabezados del CSV
+    campos = leer_linea_csv(archivo, ',') ;// Lee encabezados del CSV
 
-    // Lee cada línea del archivo CSV hasta el final
+    // Lee cada linea del archivo CSV hasta el final
     while ((campos = leer_linea_csv(archivo, ',')) != NULL) {
-
-        Escenario *lugar = &escenarios[*cantEscenarios] ; 
-        lugar->ID = atoi(campos[0]) ;
-        
-
-
-
-
-
-        printf("ID: %d\n", atoi(campos[0])) ;
-        printf("Nombre: %s\n", campos[1]) ;
-        printf("Descripcion: %s\n", campos[2]) ;
-
-        List* items = split_string(campos[3], ";") ;
-
-        printf("Items: \n");
-        for(char *item = list_first(items) ; item != NULL ; item = list_next(items)) {
-            List* values = split_string(item, ",") ;
-            char* item_name = list_first(values) ;
-            int item_weight = atoi(list_next(values)) ;
-            int item_value = atoi(list_next(values)) ;
-            printf("  - %s (%d pts, %d kg)\n", item_name, item_value, item_weight) ;
-            list_clean(values);
-            free(values) ;
+        Escenario* nuevoEscenario = crearEscenario(campos) ;
+        if (nuevoEscenario != NULL) {
+            list_pushBack(escenarios, nuevoEscenario) ;
         }
-
-        int arriba = atoi(campos[4]) ;
-        int abajo = atoi(campos[5]) ;
-        int izquierda = atoi(campos[6]) ; 
-        int derecha = atoi(campos[7]) ;
-
-        if (arriba != -1) printf("Arriba: %d\n", arriba) ;
-        if (abajo != -1) printf("Abajo: %d\n", abajo) ;
-        if (izquierda != -1) printf("Izquierda: %d\n", izquierda) ;
-        if (derecha != -1) printf("Derecha: %d\n", derecha) ;
-
-        int is_final = atoi(campos[8]) ;
-        if (is_final) printf("Es final\n") ;
-        puts("") ; // Imprime una linea en blanco para separar los escenarios
-
-        list_clean(items) ;
-        free(items) ;
     }
-    fclose(archivo) ; // Cierra el archivo después de leer todas las líneas
+    fclose(archivo) ; // Cierra el archivo después de leer todas las lineas
 }
 
+void mostrarEstadoJugador(){
 
-
-
-
-
-
-
-
-
-
+}
 
 int main() {
-    Escenario escenario ;
-    int cantidad_escenarios = 0 ;
-
-    leer_escenarios(escenario, &cantidad_escenarios) ;
-    mostrarEscenarios(escenario, cantidad_escenarios) ;
+    List* escenarios = list_create() ;
+    cargadeEscenarios(escenarios) ;
+    //Prueba sobre que se ve
+    for (Escenario* e = list_first(escenarios); e != NULL; e = list_next(escenarios)) {
+        printf("Escenario %d: %s\n", e->ID, e->nombre);
+        printf("  %s\n", e->descripcion);
+        printf("  Ítems:\n");
+        for (Item* it = list_first(e->items); it != NULL; it = list_next(e->items)) {
+            printf("    - %s (valor: %d, peso: %d)\n", it->nombre_Item, it->valor, it->peso);
+        }
+        puts("") ;
+    }
 
     return 0;
 }
