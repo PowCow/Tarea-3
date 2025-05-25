@@ -101,7 +101,7 @@ void mostrarEstadoJugador(Jugador* jugador) {
             printf(" * Nombre del Item: %s, Peso: %d [kg], Valor: %d [pts]\n", item->nombreItem, item->pesoItem, item->valorItem) ;
         }
     }
-    printf("\n     ~ Tiempo restante: %d\n", jugador->tiempoRestante) ;   
+    printf("\n     ~ Tiempo restante: %.2f\n", jugador->tiempoRestante) ;   
     printf("     ~ Peso total: %d [kg]\n", jugador->pesoTotal) ;
     printf("     ~ Puntaje acumulado: %d [pts]\n\n", jugador->puntajeAcumulado) ;
 
@@ -128,7 +128,7 @@ void mostrarEstadoJugador(Jugador* jugador) {
 }
 
 int calcularTiempoRestante(int pesoTotal) {
-    return (pesoTotal + 1) / 10 ;
+    return (pesoTotal + 1) / 10.0 ;
 }
 
 void recogerItem(Jugador* jugador) { //recoge un item del escenario y lo agrega al inventario

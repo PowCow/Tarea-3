@@ -10,3 +10,6 @@ compilar y ejecutar
 
   gcc -o Tarea3 Tarea3.c tdas/extra.c tdas/list.c tdas/map.c -I.
   ./Tarea3
+
+
+
