@@ -21,7 +21,7 @@ typedef struct {
 typedef struct {
     Escenario* actual ; //escenario en el que se encuentra el jugador
     List* inventario ; //lista de items que ha recogido el jugador
-    int tiempoRestante ;
+    float tiempoRestante ;
     int puntajeAcumulado ;
     int pesoTotal ;
 } Jugador ;
@@ -38,7 +38,7 @@ int compararEnteros(void* a, void* b) { //Listo
     return *(int*)a == *(int*)b ;
 }
 
-void lecturaEscenarios(Map *escenarios) {
+void lecturaEscenarios(Map *escenarios) { //LISTO
     FILE *archivo = fopen("graphquest.csv", "r") ;
     if (archivo == NULL) {
         perror("Error al abrir el archivo") ;
@@ -108,8 +108,11 @@ void mostrarEstadoJugador(Jugador* jugador) {
     printf("     Items disponibles en el escenario:\n") ;
     Item* item = list_first(escenario->items) ;
     if (item == NULL) printf("    ...No hay items en este escenario...\n") ;
-    else{
-        printf("        * Nombre del Item: %s, Peso: %d [kg], Valor: %d [pts]\n", item->nombreItem, item->pesoItem, item->valorItem) ;
+    else{ //arreglado, ahora imprime todos los items del escenario
+        while (item != NULL){
+            printf("        * Nombre del Item: %s, Peso: %d [kg], Valor: %d [pts]\n", item->nombreItem, item->pesoItem, item->valorItem) ;
+            item = list_next(escenario->items) ;
+        }
     }
     printf("\nACCIONES DISPONIBLES:\n") ;
     printf(" Movimientos:\n") ;
@@ -117,7 +120,9 @@ void mostrarEstadoJugador(Jugador* jugador) {
     if (escenario->abajo != -1) printf("  - Moverse hacia ABAJO \n") ;
     if (escenario->izquierda != -1) printf("  - Moverse hacia IZQUIERDA \n") ;
     if (escenario->derecha != -1) printf("  - Moverse hacia DERECHA \n") ;
-    printf("  - Recoger item\n") ;
+    if (list_first(escenario->items) != NULL) printf("  - Recoger item\n") ;
+    else if (list_first(jugador->inventario) != NULL) printf("  - Descartar item\n") ;
+    printf("  - Reiniciar partida\n") ;
     printf("  - Salir del juego\n") ;
     printf("=====================================\n\n") ;
 }
@@ -136,7 +141,7 @@ void recogerItem(Jugador* jugador) { //recoge un item del escenario y lo agrega 
     for (Item* item = list_first(itemsJugador) ; item != NULL ; item = list_next(itemsJugador)) {
         printf(" %d. Nombre del Item: %s, Peso: %d [kg], Valor: %d [pts]\n", k, item->nombreItem, item->pesoItem, item->valorItem) ;
         k++ ;}
-    printf("Seleccione la cantidad de items a recoger:\n") ;
+    printf("Seleccione el item a recoger:\n") ;
     int opcion ;
     scanf("%d", &opcion) ;
     if (opcion < 1 || opcion > list_size(itemsJugador)) {
@@ -166,7 +171,7 @@ void descartarItem(Jugador* jugador) { //descarta un item del inventario del jug
     for (Item* item = list_first(jugador->inventario) ; item != NULL ; item = list_next(jugador->inventario)) {
         printf(" %d. Nombre del Item: %s, Peso: %d [kg], Valor: %d [pts]\n", k, item->nombreItem, item->pesoItem, item->valorItem) ;
         k++ ;}
-    printf("Seleccione cantidad de items a descartar:\n") ;
+    printf("Seleccione items a descartar:\n") ;
     int opcion ;
     scanf("%d", &opcion) ;
     if (opcion < 1 || opcion > list_size(jugador->inventario)) {
@@ -202,7 +207,13 @@ void moverJugador(Jugador* jugador, Map* grafo, char direccion) {
         if (*llave == idNulo) {
             jugador->actual = parcito->value ;
             printf("Te has movido a: \"%s\"\n", jugador->actual->nombreEscenario) ;
-            jugador->tiempoRestante-- ;
+            
+            int pesoTotal_aux = 0 ;
+            for (Item* item = list_first(jugador->inventario) ; item != NULL ; item = list_next(jugador->inventario)) {
+                pesoTotal_aux += item->pesoItem ;
+            }
+            float tiempoConsumido = calcularTiempoRestante(pesoTotal_aux) ;
+            jugador->tiempoRestante -= tiempoConsumido ;
             return ;
         }
         parcito = map_next(grafo) ;
@@ -272,7 +283,7 @@ void jugar() { //mete todas las funciones para formar el juego
                 break ;
             case 3: 
                 system("cls||clear") ;
-                printf("Indica direccion (w/a/s/d)") ;
+                printf("Indica direccion (w/a/s/d): ") ;
                 char direccion ;
                 scanf(" %c", &direccion) ;
                 moverJugador(player, grafo, direccion) ;
@@ -291,7 +302,7 @@ void jugar() { //mete todas las funciones para formar el juego
                 system("cls||clear") ;
                 puts("Reintente Nuevamente....") ;
         }
-        if (player->tiempoRestante <= 0) {
+        if (player->tiempoRestante <= 0 ) {
             printf("SE ACABO EL TIEMPO!!!. Fin del Juego") ;
             salir = 1 ;
         }
