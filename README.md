@@ -1,8 +1,10 @@
 # Tarea-3
 
+
+# GRAPHQUEST: Juego interactivo utilizando grafos
 **DESCRIPCIÓN**
 
-GraphQuest es una aplicaciOn por consola basada en un sistema de grafos, donde cada nodo representa un escenario dentro de una historia interactiva. El jugador inicia en un nodo inicial y va tomando decisiones para moverse por el grafo, recolectar ítems y avanzar en la historia. El objetivo es llegar al nodo final en el menor tiempo posible, usando las conexiones entre nodos de forma eficiente.
+GraphQuest es una aplicacion por consola basada en un sistema de grafos, donde cada nodo representa un escenario dentro de una historia interactiva. El jugador inicia en un nodo inicial y va tomando decisiones para moverse por el grafo, recolectar ítems y avanzar en la historia. El objetivo es llegar al nodo final en el menor tiempo posible, usando las conexiones entre nodos de forma eficiente.
 
 Cada escenario tiene posibles direcciones (arriba, abajo, izquierda, derecha), y puede contener objetos utiles que el jugador guarda en su inventario. El programa carga el grafo desde un archivo CSV, interpretando los nodos, conexiones e items disponibles.
 
