@@ -101,7 +101,7 @@ void mostrarEstadoJugador(Jugador* jugador) {
             printf(" * Nombre del Item: %s, Peso: %d [kg], Valor: %d [pts]\n", item->nombreItem, item->pesoItem, item->valorItem) ;
         }
     }
-    printf("\n     ~ Tiempo restante: %.2f\n", jugador->tiempoRestante) ;   
+    printf("\n     ~ Tiempo restante: %.1f\n", jugador->tiempoRestante) ;   
     printf("     ~ Peso total: %d [kg]\n", jugador->pesoTotal) ;
     printf("     ~ Puntaje acumulado: %d [pts]\n\n", jugador->puntajeAcumulado) ;
 
@@ -127,10 +127,6 @@ void mostrarEstadoJugador(Jugador* jugador) {
     printf("=====================================\n\n") ;
 }
 
-int calcularTiempoRestante(int pesoTotal) {
-    return (pesoTotal + 1) / 10.0 ;
-}
-
 void recogerItem(Jugador* jugador) { //recoge un item del escenario y lo agrega al inventario
     List* itemsJugador = jugador->actual->items ;
     if (list_size(itemsJugador) == 0){
@@ -154,7 +150,7 @@ void recogerItem(Jugador* jugador) { //recoge un item del escenario y lo agrega 
             jugador->pesoTotal += item->pesoItem ;
             jugador->puntajeAcumulado += item->valorItem ;
             list_popCurrent(itemsJugador) ;//elimina el item del escenario
-            jugador->tiempoRestante-- ;
+            jugador->tiempoRestante -= 1.0 ; //cada item recogido consume 1 (segundo?)
             printf("Haz recogido el item %s\n", item->nombreItem) ;
             break ;
         }
@@ -212,8 +208,17 @@ void moverJugador(Jugador* jugador, Map* grafo, char direccion) {
             for (Item* item = list_first(jugador->inventario) ; item != NULL ; item = list_next(jugador->inventario)) {
                 pesoTotal_aux += item->pesoItem ;
             }
-            float tiempoConsumido = calcularTiempoRestante(pesoTotal_aux) ;
-            jugador->tiempoRestante -= tiempoConsumido ;
+            float tiempoConsumido = (pesoTotal_aux + 1) / 10.0 ;
+            jugador->tiempoRestante -= tiempoConsumido ; //cada movimiento consume 1 segundo por cada kg de peso total
+            printf("Tiempo Consumido : %.1f \n", tiempoConsumido) ;
+
+            if (jugador->actual->esFinal == 1){ //verifica si el escenario es el final
+                printf(" HAS LLEGADO A LA SALIDA!\n") ;
+                printf("  JUEGO TERMINADO!\n") ;
+                printf("  Tu puntaje final fue de: %d [pts]\n", jugador->puntajeAcumulado) ;
+                printf("  Tiempo restante: %.1f\n", jugador->tiempoRestante) ;
+                exit(0) ; //termina el juego inmediatamente si se llega al escenario final
+            }
             return ;
         }
         parcito = map_next(grafo) ;
@@ -295,7 +300,7 @@ void jugar() { //mete todas las funciones para formar el juego
                 break ;
             case 5:
                 system("cls||clear") ;
-                printf("GRACIAS POR JUGAR!. Tu puntaje fue de: %d\n\n", player->puntajeAcumulado) ;
+                printf("GRACIAS POR JUGAR!. Tu puntaje fue de: %d [pts]\n\n", player->puntajeAcumulado) ;
                 salir = 1 ;
                 break ;
             default:
@@ -303,12 +308,14 @@ void jugar() { //mete todas las funciones para formar el juego
                 puts("Reintente Nuevamente....") ;
         }
         if (player->tiempoRestante <= 0 ) {
-            printf("SE ACABO EL TIEMPO!!!. Fin del Juego") ;
+            printf("SE ACABO EL TIEMPO!!!. Fin del Juego\n") ;
+            printf("Tu puntaje final fue de: %d [pts]\n\n", player->puntajeAcumulado) ;
             salir = 1 ;
         }
         if (player->actual->esFinal){
             printf("\n ~~~ FELICIDADES! ~~~ . \n") ;
-            printf("Llegaste al escenario final") ;
+            printf("Llegaste al escenario final\n") ;
+            printf("Tu puntaje final fue de: %d [pts]\n\n", player->puntajeAcumulado) ;
             salir = 1 ;
         }
     }
